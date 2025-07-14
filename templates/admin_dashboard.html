@@ -1,0 +1,53 @@
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='admin_style.css')}}">
+</head>
+<body>
+
+<div class="admin-header">
+    <h1 class="header-title">Admin Dashboard</h1>
+    <a class="logout-admin" href="/logout">Logout</a>
+</div>
+<table border="1">
+    <tr>
+        <th>Subject</th>
+        <th>Description</th>
+        <th>Priority</th>
+        <th>Status</th>
+        <th>Actions</th>
+    </tr>
+    {% for ticket in tickets %}
+    <tr>
+        <td>{{ ticket.issue_subject }}</td>
+        <td>{{ ticket.issue_description }}</td>
+        <td>{{ ticket.priority }}</td>
+        <td>{{ ticket.status }}</td>
+        <td>
+            <form class="action-style" method="POST" action="/update-ticket/{{ ticket.id }}">
+                <select name="status">
+                    <option value="Open" {% if ticket.status == 'Open' %}selected{% endif %}>Open</option>
+                    <option value="In Progress" {% if ticket.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                    <option value="Closed" {% if ticket.status == 'Closed' %}selected{% endif %}>Closed</option>
+                </select>
+                <select name="assigned_to_id" required>
+                    <option value="">--Assign to--</option>
+                    {% for user in users %}
+                        <option value="{{ user.id }}" {% if ticket.assigned_to_id == user.id %}selected{% endif %}>
+                            {{ user.username }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <input type="text" name="resolution_note" placeholder="Resolution Note">
+                <button type="submit">Update</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+</body>
+</html>
+

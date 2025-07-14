@@ -1,0 +1,52 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# Flask and instance folders
+instance/
+*.sqlite3
+*.db
+
+# Environment variables
+.env
+*.env
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Logs
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Pytest cache
+.pytest_cache/
+
+# Migrations (if using Flask-Migrate and you want to ignore these)
+migrations/
+
+# Ignore assignment folder
+assignment/
+
+# Coverage reports
+htmlcov/
+.coverage
+
+# Static build (optional)
+staticfiles/
+

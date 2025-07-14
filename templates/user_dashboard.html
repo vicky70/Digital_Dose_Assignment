@@ -1,0 +1,111 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>support ticket system</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{url_for('static', filename='userdashboard.css')}}">  
+</head>
+<body>
+    
+    <div class="container">
+        <h1>Having issues</h1>
+        <p>Raise ticket</p>
+        <button onclick="openModal()">Raise ticket</button>
+
+        <div class="modal-overlay" id="ticketModal">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+                <h2>Raise a Ticket</h2>
+                <form method="POST" action="/raise-ticket">
+                    <input type="text" name="issue_subject" placeholder="Issue Subject" required><br>
+                    <textarea name="issue_description" placeholder="Describe your issue" required></textarea><br>
+                    <select name="priority" required>
+                        <option value="">Select Priority</option>
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                    </select><br>
+                    <button type="submit">Submit Ticket</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="filterModal">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closeFilterModal()">&times;</span>
+                <h2>Filter Tickets</h2>
+                <form method="GET" action="/userdashboard">
+                    <label for="status">Filter by Status:</label>
+                    <select name="status" id="status" required>
+                        <option value="">--Select Status--</option>
+                        <option value="Open">Open</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Closed">Closed</option>
+                    </select><br><br>
+                    <button type="submit">Apply Filter</button>
+                </form>
+            </div>
+        </div>
+
+        <hr>
+        <div class="active_tickets">
+            <h2>Raised Tickets</h2>
+            <i class="fas fa-filter" onclick="openFilterModal()"></i>
+        </div>
+        <hr>
+        <div class="ticket-list">
+            {% if not tickets %}
+                <h3>No Tickets Issued</h3>
+
+            {% else %}
+                {% for ticket in tickets %}
+                <div class="ticket-card">
+                    <h3>{{ ticket.issue_subject }}</h3>
+                    <p><strong>Description:</strong> {{ ticket.issue_description }}</p>
+                    <p><strong>Priority:</strong> {{ ticket.priority }}</p>
+                    <p><strong>Status:</strong> {{ ticket.status }}</p>
+                </div>
+                {% endfor %}
+            {% endif %}
+            
+        </div>
+    </div>
+    
+    <div class="logout">
+        <a href="/login" class="logout-btn">Logout</a>
+    </div>
+
+<script>
+function openModal() {
+    document.getElementById('ticketModal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('ticketModal').style.display = 'none';
+}
+
+function openFilterModal() {
+    document.getElementById('filterModal').style.display = 'flex';
+}
+
+function closeFilterModal() {
+    document.getElementById('filterModal').style.display = 'none';
+}
+
+window.onclick = function(event) {
+    const ticketModal = document.getElementById('ticketModal');
+    const filterModal = document.getElementById('filterModal');
+
+    if (event.target === ticketModal) {
+        ticketModal.style.display = "none";
+    }
+
+    if (event.target === filterModal) {
+        filterModal.style.display = "none";
+    }
+}
+</script>
+
+</body>
+</html>
