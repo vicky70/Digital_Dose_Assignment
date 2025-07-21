@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, session
-from models import db, User, Tickets
+from models import db, User, Ticket
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -19,16 +19,16 @@ with app.app_context():
 @app.route('/')
 def userdashboard():
     try:
-        if 'user_id' not in session:
+        if 'id' not in session:
             return redirect('/login')
-        
-        user = User.query.get(session['user_id'])
+        # user = User.query.get(session['id'])  //This query is deprecated (it's for lagacy projects)
+        user = db.session.get(User, session['id'])
 
         status_filter = request.args.get('status')
         if status_filter:
-            tickets = Tickets.query.filter_by(user_email=user.email, status=status_filter).all()
+            tickets = Ticket.query.filter_by(user_id=user.id, status=status_filter).all()
         else:
-            tickets = Tickets.query.filter_by(user_email=user.email).all()
+            tickets = Ticket.query.filter_by(user_id=user.id).all()
         return render_template('user_dashboard.html', tickets=tickets)
     except Exception as e:
         return f"An error occurred: {str(e)}", 500
@@ -41,13 +41,13 @@ def raise_ticket():
         if 'user_id' not in session:
             return redirect('/login')
 
-        user = User.query.get(session['user_id'])
+        user = User.query.get(session['id'])
 
         issue_subject = request.form['issue_subject']
         issue_description = request.form['issue_description']
         priority = request.form['priority']
 
-        new_ticket = Tickets(
+        new_ticket = Ticket(
             name=user.username,
             user_email=user.email,
             issue_subject=issue_subject,
@@ -56,7 +56,7 @@ def raise_ticket():
         )
         db.session.add(new_ticket)
         db.session.commit()
-        return redirect('/userdashboard')
+        return redirect('/')
     except Exception as e:
         return f"An error occurred: {str(e)}", 500
 
@@ -67,8 +67,9 @@ def admin_dashboard():
         if 'user_id' not in session or session.get('role') != 'admin':
             return redirect('/login')
 
-        all_tickets = Tickets.query.all()
+        all_tickets = Ticket.query.all()
         users = User.query.filter_by(role='user').all()
+
         return render_template('admin_dashboard.html', tickets=all_tickets, users=users)
     except Exception as e:
         return f"An error occurred: {str(e)}", 500
@@ -81,7 +82,7 @@ def update_ticket(ticket_id):
         if 'user_id' not in session or session.get('role') != 'admin':
             return redirect('/login')
 
-        ticket = Tickets.query.get_or_404(ticket_id)
+        ticket = Ticket.query.get_or_404(ticket_id)
 
         ticket.status = request.form['status']
         ticket.assigned_to_id = request.form.get('assigned_to_id')
@@ -96,26 +97,29 @@ def update_ticket(ticket_id):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     try:
+        print("Redirecting 1 ... ")
         message = ''
         if request.method == 'POST':
             email = request.form['email']
             password = request.form['password']
 
             user = User.query.filter_by(email=email).first()
-
+            print("Redirecting 2 ...")
             if user and check_password_hash(user.password, password):
-                session['user_id'] = user.id
-                session['username'] = user.username
+                session['id'] = user.id
+                session['name'] = user.name
                 session['role'] = user.role
-
+                print("Redirection 3 ... ")
                 if user.role == 'admin':
                     return redirect('/admin')
                 else:
+                    print("Redirecting 4 ...")
                     return redirect('/')
             else:
                 message = 'Invalid email or password'
         return render_template('login.html', message=message)
     except Exception as e:
+        print("ERROR:- ", e)
         return f"An error occurred: {str(e)}", 500
 
 
@@ -123,18 +127,21 @@ def login():
 @app.route('/registration', methods=['GET', 'POST'])
 def registration():
     try:
+        print("Redirecting...")
         message = ''
         if request.method == 'POST':
-            username = request.form['username']
+            print("Redirecting 2 ...")
+            username = request.form['name']
             email = request.form['email']
+            phone = request.form['phone']
             password = request.form['password']
-
+            print("Redirecting 3...")
             existing_user = User.query.filter_by(email=email).first()
             if existing_user:
                 message = 'Email already registered.'
             else:
                 hashed_password = generate_password_hash(password)
-                new_user = User(username=username, email=email, password=hashed_password)
+                new_user = User(name=username, email=email, phone=phone,password=hashed_password)
                 db.session.add(new_user)
                 db.session.commit()
                 message = 'Registration successful!'
